@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h3 class="mb-0"><i class="fas fa-cog"></i> {{ t('admin_panel') }} (Global Defaults)</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Manage Categories</h5>
+                <form method="POST" action="{{ url_for('admin') }}" class="mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-2">
+                        <input type="text" name="name_en" class="form-control" placeholder="Name (English)" required>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" name="name_es" class="form-control" placeholder="Nombre (Español)" required>
+                    </div>
+                    <button type="submit" name="add_category" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> {{ t('add_category') }}
+                    </button>
+                </form>
+
+                <ul class="list-group">
+                {% for cat in categories %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>EN:</strong> {{ cat.name_en }} | <strong>ES:</strong> {{ cat.name_es }}
+                            <span class="badge bg-secondary">{{ cat.items|length }} items</span>
+                        </div>
+                        <form method="POST" action="{{ url_for('admin') }}" onsubmit="return confirm('{{ t('delete_confirm') }}');" style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="category_id" value="{{ cat.id }}">
+                            <button type="submit" name="delete_category" class="btn btn-sm btn-outline-danger" title="{{ t('delete') }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+            
+            <ul class="list-group" style="max-height: 400px; overflow-y: auto;">
+                {% for item in items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-info me-2">{{ item.category.name_en }}</span>
+                            <strong>{{ item.name_en }}</strong> / {{ item.name_es }}
+                        </div>
+                        <form method="POST" action="{{ url_for('admin') }}" onsubmit="return confirm('{{ t('delete_confirm') }}');" style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <button type="submit" name="delete_item" class="btn btn-sm btn-outline-danger" title="{{ t('delete') }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+            </div>
+
+            <div class="col-md-6">
+                <h5>Manage Items</h5>
+                <form method="POST" action="{{ url_for('admin') }}" class="mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-2">
+                        <select name="category_id" class="form-select" required>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name_en }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" name="name_en" class="form-control" placeholder="Name (English)" required>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" name="name_es" class="form-control" placeholder="Nombre (Español)" required>
+                    </div>
+                    <button type="submit" name="add_item" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> {{ t('add_item') }}
+                    </button>
+                </form>
+
+            
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
