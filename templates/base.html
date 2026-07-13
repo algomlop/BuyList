@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t('app_title') }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ── Design tokens ──────────────────────────────────────────── */
+        :root {
+            --bg:           #EEF2FF;
+            --surface:      #FFFFFF;
+            --surface-2:    #F5F7FF;
+            --border:       #DDE3F5;
+            --border-2:     #C7D0EE;
+
+            --primary:      #4F46E5;
+            --primary-d:    #3730A3;
+            --primary-lt:   #E0E7FF;
+
+            --success:      #059669;
+            --success-bg:   #ECFDF5;
+            --success-bd:   #6EE7B7;
+
+            --warning:      #D97706;
+            --warning-bg:   #FFFBEB;
+            --warning-bd:   #FCD34D;
+
+            --danger:       #DC2626;
+            --danger-bg:    #FEF2F2;
+            --danger-bd:    #FCA5A5;
+
+            --muted:        #6B7280;
+            --muted-bg:     #F3F4F6;
+            --muted-bd:     #D1D5DB;
+
+            --text:         #1E1B4B;
+            --text-muted:   #9CA3AF;
+
+            --shadow-sm:    0 1px 3px rgba(79,70,229,.07), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md:    0 4px 16px rgba(79,70,229,.10), 0 2px 6px rgba(0,0,0,.05);
+            --shadow-lg:    0 12px 40px rgba(79,70,229,.13), 0 4px 12px rgba(0,0,0,.07);
+
+            --r-xs:  4px;
+            --r-sm:  8px;
+            --r-md:  12px;
+            --r-lg:  18px;
+            --r-xl:  24px;
+        }
+
+        /* ── Reset & base ───────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        /* ── Layout ─────────────────────────────────────────────────── */
+        .app-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.25rem 1rem 4rem;
+        }
+
+        /* ── Navbar ─────────────────────────────────────────────────── */
+        .app-nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            flex-shrink: 0;
+        }
+        .brand-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .nav-spacer { flex: 1; }
+        .nav-actions { display: flex; align-items: center; gap: 0.35rem; }
+
+        .nav-lang {
+            display: flex;
+            background: var(--muted-bg);
+            border-radius: var(--r-xs);
+            border: 1px solid var(--muted-bd);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .nav-lang a {
+            padding: 4px 9px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            transition: all 0.15s;
+        }
+        .nav-lang a.active, .nav-lang a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--r-xs);
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 130px;
+            text-overflow: ellipsis;
+        }
+        .nav-pill i { color: var(--primary); flex-shrink: 0; }
+
+        .nav-icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .nav-icon-btn:hover { background: var(--muted-bg); color: var(--text); }
+        .nav-icon-btn.logout:hover { background: var(--danger-bg); color: var(--danger); }
+
+        @media (max-width: 480px) {
+            .nav-pill-label { display: none; }
+            .nav-pill { max-width: 44px; padding: 4px 8px; }
+            .nav-brand span { display: none; }
+        }
+
+        /* ── Flashes ─────────────────────────────────────────────────── */
+        .flash-list { margin-top: 1rem; }
+        .flash-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.8rem 1rem;
+            border-radius: var(--r-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.6rem;
+            border: 1px solid transparent;
+        }
+        .flash-item .btn-close { margin-left: auto; font-size: 0.7rem; }
+        .flash-item.flash-success { background: var(--success-bg); color: var(--success); border-color: var(--success-bd); }
+        .flash-item.flash-danger  { background: var(--danger-bg);  color: var(--danger);  border-color: var(--danger-bd);  }
+        .flash-item.flash-warning { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-bd); }
+
+        .guest-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--warning-bg);
+            color: var(--warning);
+            border: 1px solid var(--warning-bd);
+            border-radius: var(--r-sm);
+            padding: 0.65rem 1rem;
+            font-size: 0.83rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Cards ───────────────────────────────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .card-header {
+            background: none;
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            letter-spacing: 0.01em;
+            color: var(--text);
+            border-radius: var(--r-lg) var(--r-lg) 0 0;
+        }
+        .card-header i { color: var(--primary); }
+        .card-header .header-count {
+            margin-left: auto;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--muted-bg);
+            padding: 2px 8px;
+            border-radius: 99px;
+        }
+        .card-body { padding: 1.25rem; }
+
+        /* ── Buttons ─────────────────────────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-weight: 600;
+            border-radius: var(--r-sm);
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.15s;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-d); border-color: var(--primary-d); color: white; }
+        .btn-outline-primary { background: none; border-color: var(--primary); color: var(--primary); }
+        .btn-outline-primary:hover { background: var(--primary); color: white; }
+        .btn-outline-danger { background: none; border-color: var(--danger); color: var(--danger); }
+        .btn-outline-danger:hover { background: var(--danger); color: white; }
+        .btn-ghost { background: var(--muted-bg); border-color: var(--muted-bd); color: var(--text); }
+        .btn-ghost:hover { background: var(--border); color: var(--text); }
+        .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; border-radius: var(--r-xs); }
+        .btn-lg { padding: 0.7rem 1.5rem; font-size: 1rem; }
+        .btn-block { width: 100%; }
+
+        /* ── Forms ───────────────────────────────────────────────────── */
+        .form-control, .form-select {
+            border: 1.5px solid var(--border-2);
+            border-radius: var(--r-sm);
+            padding: 0.55rem 0.85rem;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: var(--surface);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            width: 100%;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.13);
+            outline: none;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+        }
+
+        /* ── Progress ────────────────────────────────────────────────── */
+        .prog-track {
+            height: 6px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, #818CF8 100%);
+            border-radius: 99px;
+            transition: width 0.4s cubic-bezier(.4,0,.2,1);
+        }
+        .prog-fill.done { background: var(--success); }
+
+        /* ── Badges ──────────────────────────────────────────────────── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2em;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.25em 0.55em;
+            border-radius: var(--r-xs);
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+        .badge-primary  { background: var(--primary-lt); color: var(--primary); }
+        .badge-success  { background: var(--success-bg); color: var(--success); }
+        .badge-warning  { background: var(--warning-bg); color: var(--warning); }
+        .badge-danger   { background: var(--danger-bg);  color: var(--danger);  }
+        .badge-muted    { background: var(--muted-bg);   color: var(--muted);   }
+        /* Bootstrap compat */
+        .bg-primary { background: var(--primary)  !important; }
+        .bg-success { background: var(--success)  !important; }
+        .bg-warning { background: var(--warning)  !important; color: white !important; }
+        .bg-danger  { background: var(--danger)   !important; }
+        .bg-secondary { background: var(--muted)  !important; }
+        .bg-info    { background: #0891B2 !important; }
+    </style>
+</head>
+<body>
+
+<nav class="app-nav">
+    <div class="nav-inner">
+        <a class="nav-brand" href="{{ url_for('shopping_list') }}">
+            <div class="brand-icon"><i class="fas fa-cart-shopping"></i></div>
+            <span>{{ t('app_title') }}</span>
+        </a>
+        <div class="nav-spacer"></div>
+        <div class="nav-actions">
+            <div class="nav-lang">
+                <a href="{{ url_for('set_lang', lang='en') }}" class="{{ 'active' if lang == 'en' else '' }}">EN</a>
+                <a href="{{ url_for('set_lang', lang='es') }}" class="{{ 'active' if lang == 'es' else '' }}">ES</a>
+            </div>
+            {% if current_user.is_authenticated %}
+                <div class="nav-pill">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="nav-pill-label" style="overflow:hidden;text-overflow:ellipsis;">{{ current_user.alias }}</span>
+                </div>
+                {% if current_user.is_admin %}
+                    <a class="nav-icon-btn" href="{{ url_for('admin') }}" title="{{ t('admin_panel') }}">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                {% endif %}
+                <form method="POST" action="{{ url_for('logout') }}" style="display:inline;margin:0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="nav-icon-btn logout" title="{{ t('logout') }}">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="app-shell">
+    {% if current_user.is_authenticated and current_user.is_guest %}
+        <div class="guest-banner">
+            <i class="fas fa-hourglass-half"></i>
+            {{ t('guest_notice') }}
+        </div>
+    {% endif %}
+
+    <div class="flash-list">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-item flash-{{ category }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.flash-item').forEach(el => {
+        setTimeout(() => { try { new bootstrap.Alert(el).close(); } catch(e) {} }, 4000);
+    });
+});
+</script>
+{% endblock %}
+</body>
+</html>
