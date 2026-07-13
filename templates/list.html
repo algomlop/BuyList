@@ -223,10 +223,7 @@
     transition: width 0.4s cubic-bezier(.4,0,.2,1);
 }
 .cat-prog-fill.done { background: var(--success); }
-.cat-prog-text {
-    font-size: 0.72rem; font-weight: 700;
-    color: var(--text-muted); min-width: 28px; text-align: right;
-}
+
 .cat-chevron {
     color: var(--text-muted); font-size: 0.72rem;
     transition: transform 0.22s cubic-bezier(.4,0,.2,1);
@@ -491,127 +488,16 @@
     </div>
     <div class="list-header-info">
         <div class="list-header-name">{{ t('shopping_list') }}</div>
-        <div class="list-header-sub">
-            {{ not_needed_count }} / {{ total_count }} {{ t('progress_complete') }}
-        </div>
+     
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     ADD CATEGORIES TO LIST — accordion, collapsed by default
-═══════════════════════════════════════════════════════════ -->
-<div class="card top-card">
-    <button type="button" class="acc-header" id="addCatToggle"
-            aria-expanded="false" aria-controls="addCatBody">
-        <i class="fas fa-layer-group" style="color:var(--primary);"></i>
-        {{ t('add_categories') }}
-        <i class="fas fa-chevron-down acc-chevron"></i>
-    </button>
-    <div class="acc-collapse" id="addCatBody" role="region">
-        <div>
-            <div class="acc-body">
-                {% if addable_categories %}
-                    <form method="POST" action="{{ url_for('shopping_list') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="cat-grid">
-                            {% for cat in addable_categories %}
-                                <label class="cat-check" data-category-id="{{ cat.id }}">
-                                    <input type="checkbox" name="categories" value="{{ cat.id }}">
-                                    <span class="cat-check-label">{{ get_name(cat) }}</span>
-                                    <span class="cat-count">{{ cat.items|length }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                        <button type="submit" name="add_categories_to_list"
-                                class="btn btn-primary btn-block" style="margin-top:0.85rem;">
-                            <i class="fas fa-cart-plus"></i> {{ t('add_to_list') }}
-                        </button>
-                    </form>
-                {% else %}
-                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">
-                        {{ t('no_categories_to_add') }}</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- ══════════════════════════════════════════════════════════
      CUSTOM ITEMS — accordion, collapsed by default
 ═══════════════════════════════════════════════════════════ -->
-<div class="card top-card">
-    <button type="button" class="acc-header" id="customToggle"
-            aria-expanded="false" aria-controls="customBody">
-        <i class="fas fa-sliders-h" style="color:var(--primary);"></i>
-        {{ t('custom_items') }}
-        {% if user_items %}
-            <span class="cat-count" style="margin-left:0.1rem;">{{ user_items|length }}</span>
-        {% endif %}
-        <i class="fas fa-chevron-down acc-chevron"></i>
-    </button>
-    <div class="acc-collapse" id="customBody" role="region">
-        <div>
-            <div class="acc-body">
 
-                <!-- Add category -->
-                <form method="POST" action="{{ url_for('shopping_list') }}"
-                      style="margin-bottom:0.9rem;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <p class="section-label">{{ t('add_category') }}</p>
-                    <div style="display:flex;gap:0.5rem;">
-                        <input type="text" name="cat_name" class="form-control"
-                               placeholder="{{ t('category') }}…">
-                        <button type="submit" name="add_category"
-                                class="btn btn-outline-primary btn-sm"
-                                style="flex-shrink:0;">
-                            <i class="fas fa-folder-plus"></i>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Add item -->
-                <form method="POST" action="{{ url_for('shopping_list') }}"
-                      style="margin-bottom:1rem;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <p class="section-label">{{ t('add_item') }}</p>
-                    <select name="category_id" class="form-select"
-                            style="margin-bottom:0.4rem;">
-                        {% for cat in categories %}
-                            <option value="{{ cat.id }}">{{ get_name(cat) }}</option>
-                        {% endfor %}
-                    </select>
-                    <div style="display:flex;gap:0.5rem;">
-                        <input type="text" name="item_name" class="form-control"
-                               placeholder="{{ t('item_name') }}…">
-                        <button type="submit" name="add_item"
-                                class="btn btn-outline-primary btn-sm"
-                                style="flex-shrink:0;">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Item list -->
-                {% if user_items %}
-                    <div style="border-top:1px solid var(--border);padding-top:0.7rem;">
-                        {% for item in user_items %}
-                            <div class="custom-item-row">
-                                <i class="fas fa-tag"
-                                   style="color:var(--border-2);font-size:0.7rem;"></i>
-                                <span style="flex:1;">{{ get_name(item) }}</span>
-                                <span class="custom-item-cat">{{ get_name(item.category) }}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">
-                        {{ t('no_items') }}</p>
-                {% endif %}
-
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- ── Search + filters ──────────────────────────────────────── -->
 <div class="search-wrap">
@@ -646,7 +532,7 @@
                     <div class="cat-prog-fill {% if pct == 100 %}done{% endif %}"
                          style="width:{{ pct }}%;"></div>
                 </div>
-                <span class="cat-prog-text">{{ not_needed_items|length }}/{{ items|length }}</span>
+                
             </div>
             <i class="fas fa-chevron-down cat-chevron"></i>
         </button>
@@ -775,6 +661,79 @@
     </div>
 {% endif %}
 
+<div class="card top-card">
+    <button type="button" class="acc-header" id="customToggle"
+            aria-expanded="false" aria-controls="customBody">
+        <i class="fas fa-sliders-h" style="color:var(--primary);"></i>
+        {{ t('custom_items') }}
+        {% if user_items %}
+            <span class="cat-count" style="margin-left:0.1rem;">{{ user_items|length }}</span>
+        {% endif %}
+        <i class="fas fa-chevron-down acc-chevron"></i>
+    </button>
+    <div class="acc-collapse" id="customBody" role="region">
+        <div>
+            <div class="acc-body">
+
+                <!-- Add category -->
+                <form method="POST" action="{{ url_for('shopping_list') }}"
+                      style="margin-bottom:0.9rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <p class="section-label">{{ t('add_category') }}</p>
+                    <div style="display:flex;gap:0.5rem;">
+                        <input type="text" name="cat_name" class="form-control"
+                               placeholder="{{ t('category') }}…">
+                        <button type="submit" name="add_category"
+                                class="btn btn-outline-primary btn-sm"
+                                style="flex-shrink:0;">
+                            <i class="fas fa-folder-plus"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Add item -->
+                <form method="POST" action="{{ url_for('shopping_list') }}"
+                      style="margin-bottom:1rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <p class="section-label">{{ t('add_item') }}</p>
+                    <select name="category_id" class="form-select"
+                            style="margin-bottom:0.4rem;">
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ get_name(cat) }}</option>
+                        {% endfor %}
+                    </select>
+                    <div style="display:flex;gap:0.5rem;">
+                        <input type="text" name="item_name" class="form-control"
+                               placeholder="{{ t('item_name') }}…">
+                        <button type="submit" name="add_item"
+                                class="btn btn-outline-primary btn-sm"
+                                style="flex-shrink:0;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Item list -->
+                {% if user_items %}
+                    <div style="border-top:1px solid var(--border);padding-top:0.7rem;">
+                        {% for item in user_items %}
+                            <div class="custom-item-row">
+                                <i class="fas fa-tag"
+                                   style="color:var(--border-2);font-size:0.7rem;"></i>
+                                <span style="flex:1;">{{ get_name(item) }}</span>
+                                <span class="custom-item-cat">{{ get_name(item.category) }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">
+                        {{ t('no_items') }}</p>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 const CSRF_TOKEN      = '{{ csrf_token() }}';
 const URL_UPDATE_ITEM = (id) => '{{ url_for("update_item", li_id=0) }}'.replace('/0', '/' + id);
@@ -893,10 +852,10 @@ function refreshCategoryCounters(catSection) {
     const notNeeded = catSection.querySelectorAll('.item-row.status-not_needed').length;
     const pct = total ? Math.round((notNeeded / total) * 100) : 0;
 
-    const text = catSection.querySelector('.cat-prog-text');
+
     const fill = catSection.querySelector('.cat-prog-fill');
 
-    if (text) text.textContent = `${notNeeded}/${total}`;
+  
     if (fill) {
         fill.style.width = `${pct}%`;
         fill.classList.toggle('done', pct === 100);
@@ -916,9 +875,7 @@ function refreshListCounters() {
     const total = rows.length;
     const notNeeded = document.querySelectorAll('.item-row.status-not_needed').length;
 
-    const text = document.querySelector('.list-header-sub');
-    if (text) text.textContent = `${notNeeded} / ${total} {{ t("progress_complete") }}`;
-}
+  }
 
 function toggleItem(id, notNeeded) { updateItem(id, { status: notNeeded ? 'not_needed' : 'to_buy' }); }
 
