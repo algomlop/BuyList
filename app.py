@@ -280,6 +280,18 @@ def index():
             user = User(alias=alias, is_admin=(alias == ADMIN_ALIAS))
             db.session.add(user)
             db.session.commit()
+            
+            # Add all global categories and their items to the new user's list with status "not_needed"
+            global_categories = Category.query.filter_by(user_id=None, is_deleted=False).all()
+            for category in global_categories:
+                global_items = Item.query.filter(
+                    Item.category_id == category.id,
+                    Item.user_id.is_(None),
+                    Item.is_deleted == False
+                ).all()
+                for item in global_items:
+                    db.session.add(ListItem(user_id=user.id, item_id=item.id, status="not_needed"))
+            db.session.commit()
         elif alias == ADMIN_ALIAS and not user.is_admin:
             user.is_admin = True
             db.session.commit()
@@ -295,6 +307,19 @@ def guest():
     user = User(alias=guest_alias, is_guest=True)
     db.session.add(user)
     db.session.commit()
+    
+    # Add all global categories and their items to the new guest user's list with status "not_needed"
+    global_categories = Category.query.filter_by(user_id=None, is_deleted=False).all()
+    for category in global_categories:
+        global_items = Item.query.filter(
+            Item.category_id == category.id,
+            Item.user_id.is_(None),
+            Item.is_deleted == False
+        ).all()
+        for item in global_items:
+            db.session.add(ListItem(user_id=user.id, item_id=item.id, status="not_needed"))
+    db.session.commit()
+    
     login_user(user)
     return redirect(url_for("shopping_list"))
 
