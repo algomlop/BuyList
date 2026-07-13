@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  buylist:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: buylist
+    restart: unless-stopped
+    ports:
+      - "8123:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SCRIPT_NAME=/buylist # CHANGE IT
+      - SECRET_KEY=secret_key # CHANGE IT 
+      - ADMIN_ALIAS=admin123 # CHANGE IT 
+      
