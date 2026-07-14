@@ -167,7 +167,7 @@ TRANSLATIONS = {
 }
 
 def t_key(key: str) -> str:
-    lang = session.get("lang", "en")
+    lang = session.get("lang", "es")
     return TRANSLATIONS.get(lang, TRANSLATIONS["en"]).get(key, key)
 
 @app.context_processor
@@ -256,7 +256,7 @@ def get_display_name(obj):
 
 def sort_by_display_name(objs):
     """Sort Category/Item objects alphabetically by the current language's name."""
-    lang = session.get("lang", "en")
+    lang = session.get("lang", "es")
     attr = "name_en" if lang == "en" else "name_es"
     return sorted(objs, key=lambda o: getattr(o, attr).strip().lower())
 
@@ -406,7 +406,7 @@ def shopping_list():
         cat = li.item.category
         grouped.setdefault(cat, []).append(li)
 
-    lang = session.get("lang", "en")
+    lang = session.get("lang", "es")
     name_attr = "name_en" if lang == "en" else "name_es"
 
     # Categories keep DB insertion order (id asc); items within a category are alphabetical.
