@@ -115,6 +115,8 @@ TRANSLATIONS = {
         "all": "All",
         "or": "or",
         "no_categories_to_add": "All categories already added",
+        "collapse_all": "Collapse All",
+        "expand_all": "Expand All",
     },
     "es": {
         "app_title": "Lista de la compra",
@@ -128,7 +130,7 @@ TRANSLATIONS = {
         "admin_panel": "Panel de Admin",
         "delete": "Borrar",
         "status_to_buy": "Por comprar",
-        "status_not_needed": "No hace falta",
+        "status_not_needed": "Listo",
         "notes": "Notas",
         "custom_items": "Mis Elementos",
         "add_category": "Añadir Categoría",
@@ -163,12 +165,14 @@ TRANSLATIONS = {
         "all": "Todos",
         "or": "o",
         "no_categories_to_add": "Ya están todas las categorías añadidas",
+        "collapse_all": "Contraer Todo",
+        "expand_all": "Expandir Todo",
     },
 }
 
 def t_key(key: str) -> str:
     lang = session.get("lang", "es")
-    return TRANSLATIONS.get(lang, TRANSLATIONS["en"]).get(key, key)
+    return TRANSLATIONS.get(lang, TRANSLATIONS["es"]).get(key, key)
 
 @app.context_processor
 def inject_globals():
@@ -182,7 +186,7 @@ def inject_globals():
             session["_csrf_token"] = token
         return token
 
-    return dict(t=t, lang=session.get("lang", "en"), csrf_token=csrf_token)
+    return dict(t=t, lang=session.get("lang", "es"), csrf_token=csrf_token)
 
 @app.before_request
 def protect_post_requests():
@@ -252,7 +256,7 @@ def clean_text(value: str, max_len: int = MAX_NAME_LEN) -> str:
     return value.strip()[:max_len]
 
 def get_display_name(obj):
-    return obj.name_en if session.get("lang", "en") == "en" else obj.name_es
+    return obj.name_en if session.get("lang", "es") == "en" else obj.name_es
 
 def sort_by_display_name(objs):
     """Sort Category/Item objects alphabetically by the current language's name."""
