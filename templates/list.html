@@ -6,38 +6,6 @@
    LIST PAGE — all colors from design-token vars in base.html
 ═══════════════════════════════════════════════════════════ */
 
-/* ── List header ─────────────────────────────────────────── */
-.list-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
-    color: white;
-    border-radius: var(--r-lg);
-    box-shadow: var(--shadow-md);
-    margin-bottom: 1.1rem;
-}
-.list-header-icon {
-    width: 42px; height: 42px; flex-shrink: 0;
-    background: rgba(255,255,255,.18);
-    border-radius: var(--r-md);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem;
-}
-.list-header-info { flex: 1; min-width: 0; }
-.list-header-name {
-    font-size: 1.25rem; font-weight: 800;
-    letter-spacing: -0.02em;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    line-height: 1.2;
-}
-.list-header-sub {
-    font-size: 0.75rem;
-    opacity: 0.75;
-    margin-top: 0.1rem;
-}
-
 /* ── Accordion header shared style (add categories / custom items) ── */
 .acc-header {
     display: flex;
@@ -141,9 +109,35 @@
     color: var(--text-muted); font-size: 0.85rem;
     pointer-events: none;
 }
+
+
+.search-clear {
+    position: absolute; 
+    right: 0.4rem; 
+    top: 50%;
+    transform: translateY(-50%);
+    border: none; 
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: color 0.15s, background 0.15s;
+}
+.search-clear:hover { 
+    color: var(--primary); 
+    background: var(--surface-2);
+}
+
 .search-input-wrap input {
     width: 100%;
-    padding: 0.6rem 1rem 0.6rem 2.2rem;
+    padding: 0.6rem 2.5rem 0.6rem 2.2rem;
     border: 1.5px solid var(--border-2);
     border-radius: var(--r-sm);
     font-size: 0.9rem;
@@ -320,6 +314,20 @@
     content: ''; flex: 1; height: 1px; background: var(--border);
 }
 
+.done-separator {
+    cursor: pointer;
+    user-select: none;
+}
+.done-separator .sep-chevron {
+    font-size: 0.65rem;
+    transition: transform 0.2s cubic-bezier(.4,0,.2,1);
+}
+.done-separator.collapsed .sep-chevron { transform: rotate(-90deg); }
+
+.cat-body[data-notneeded-collapsed="true"] .item-row.status-not_needed {
+    display: none !important;
+}
+
 /* ── Item name ───────────────────────────────────────────── */
 .item-name {
     flex: 1;
@@ -481,34 +489,28 @@
 .top-card { margin-bottom: 1.1rem; }
 </style>
 
-<!-- ── List header ─────────────────────────────────────────── -->
-<div class="list-header">
-    <div class="list-header-icon">
-        <i class="fas fa-cart-shopping"></i>
-    </div>
-    <div class="list-header-info">
-        <div class="list-header-name">{{ t('shopping_list') }}</div>
-     
-    </div>
-</div>
-
-
-
-<!-- ══════════════════════════════════════════════════════════
-     CUSTOM ITEMS — accordion, collapsed by default
-═══════════════════════════════════════════════════════════ -->
-
-
 <!-- ── Search + filters ──────────────────────────────────────── -->
 <div class="search-wrap">
     <div class="search-input-wrap">
         <i class="fas fa-search"></i>
         <input type="text" id="searchInput" placeholder="{{ t('search_items') }}">
+        <button type="button" id="searchClear" class="search-clear" style="display:none;" aria-label="{{ t('clear') }}">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     <div class="filter-bar">
         <button class="filter-btn active" data-filter="all">{{ t('all') }}</button>
         <button class="filter-btn" data-filter="to_buy">{{ t('status_to_buy') }}</button>
         <button class="filter-btn" data-filter="not_needed">{{ t('status_not_needed') }}</button>
+
+        <button type="button" class="filter-btn" id="collapseAllBtn"
+                title="{{ t('collapse_all') }}" aria-label="{{ t('collapse_all') }}">
+            <i class="fas fa-angles-up"></i>
+        </button>
+        <button type="button" class="filter-btn" id="expandAllBtn"
+                title="{{ t('expand_all') }}" aria-label="{{ t('expand_all') }}">
+            <i class="fas fa-angles-down"></i>
+        </button>
     </div>
 </div>
 
@@ -532,7 +534,6 @@
                     <div class="cat-prog-fill {% if pct == 100 %}done{% endif %}"
                          style="width:{{ pct }}%;"></div>
                 </div>
-                
             </div>
             <i class="fas fa-chevron-down cat-chevron"></i>
         </button>
@@ -734,6 +735,7 @@
         </div>
     </div>
 </div>
+
 <script>
 const CSRF_TOKEN      = '{{ csrf_token() }}';
 const URL_UPDATE_ITEM = (id) => '{{ url_for("update_item", li_id=0) }}'.replace('/0', '/' + id);
@@ -744,6 +746,40 @@ const STATUS_LABELS = {
 };
 
 const pendingNotes = new Map();
+
+/* ── NUEVO: Control de visibilidad de los botones Expandir/Contraer Todo ── */
+function updateExpandCollapseButtons() {
+    const catSections = document.querySelectorAll('.cat-section:not([style*="display: none"])');
+    const catHeaders  = document.querySelectorAll('.cat-section:not([style*="display: none"]) .cat-header');
+    
+    const expandBtn   = document.getElementById('expandAllBtn');
+    const collapseBtn = document.getElementById('collapseAllBtn');
+
+    if (!expandBtn || !collapseBtn) return;
+
+    if (catHeaders.length === 0) {
+        expandBtn.style.display = 'none';
+        collapseBtn.style.display = 'none';
+        return;
+    }
+
+    let expandedCount = 0;
+    let collapsedCount = 0;
+
+    catHeaders.forEach(header => {
+        if (header.getAttribute('aria-expanded') === 'true') {
+            expandedCount++;
+        } else {
+            collapsedCount++;
+        }
+    });
+
+    // Si hay alguna contraída -> Mostrar botón de Expandir
+    expandBtn.style.display = (collapsedCount > 0) ? '' : 'none';
+    
+    // Si hay alguna expandida -> Mostrar botón de Contraer
+    collapseBtn.style.display = (expandedCount > 0) ? '' : 'none';
+}
 
 function updateNotes(itemId, value) {
     const promise = fetch(URL_UPDATE_ITEM(itemId), {
@@ -821,7 +857,7 @@ function rebuildCategoryBody(catBody) {
         if (!grouped[status].length) continue;
 
         if (status !== 'to_buy') {
-            catBody.appendChild(makeSeparator(status, grouped[status].length));
+            catBody.appendChild(makeSeparator(status, grouped[status].length, catBody));
         }
 
         grouped[status].forEach(row => catBody.appendChild(row));
@@ -834,13 +870,17 @@ function rebuildCategoryBody(catBody) {
     refreshListCounters();
 }
 
-function makeSeparator(status, count) {
+function makeSeparator(status, count, catBody) {
     const div = document.createElement('div');
     div.className = 'done-separator';
     div.dataset.status = status;
     div.dataset.label = STATUS_LABELS[status] || status;
 
-    div.innerHTML = `<i class="fas fa-ban" style="color:var(--muted);"></i> ${div.dataset.label} (<span class="sep-count">${count}</span>)`;
+    if (catBody?.dataset.notneededCollapsed === 'true') {
+        div.classList.add('collapsed');
+    }
+
+    div.innerHTML = `<i class="fas fa-ban" style="color:var(--muted);"></i> ${div.dataset.label} (<span class="sep-count">${count}</span>) <i class="fas fa-chevron-down sep-chevron"></i>`;
     return div;
 }
 
@@ -852,9 +892,7 @@ function refreshCategoryCounters(catSection) {
     const notNeeded = catSection.querySelectorAll('.item-row.status-not_needed').length;
     const pct = total ? Math.round((notNeeded / total) * 100) : 0;
 
-
     const fill = catSection.querySelector('.cat-prog-fill');
-
   
     if (fill) {
         fill.style.width = `${pct}%`;
@@ -874,8 +912,7 @@ function refreshListCounters() {
     const rows = document.querySelectorAll('.item-row');
     const total = rows.length;
     const notNeeded = document.querySelectorAll('.item-row.status-not_needed').length;
-
-  }
+}
 
 function toggleItem(id, notNeeded) { updateItem(id, { status: notNeeded ? 'not_needed' : 'to_buy' }); }
 
@@ -888,6 +925,8 @@ document.querySelectorAll('.cat-header').forEach(header => {
         const isExpanded = header.getAttribute('aria-expanded') === 'true';
         header.setAttribute('aria-expanded', String(!isExpanded));
         body.classList.toggle('collapsed', isExpanded);
+        
+        updateExpandCollapseButtons(); // Re-evaluar botones al desplegar/plegar manualmente
     });
 });
 
@@ -944,31 +983,116 @@ function addQuickItem(event, categoryId) {
     input.value = '';
 }
 
-// Search
-document.getElementById('searchInput').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase();
+function getActiveFilter() {
+    return document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+}
+
+function applyItemVisibility() {
+    const searchInput = document.getElementById('searchInput');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const filter = getActiveFilter();
+
     document.querySelectorAll('.item-row').forEach(item => {
         const itemName = item.querySelector('.item-name').textContent.toLowerCase();
         const notes = (item.querySelector('.item-notes')?.value || '').toLowerCase();
-        item.style.display = (itemName.includes(searchTerm) || notes.includes(searchTerm))
-            ? 'flex' : 'none';
+        const matchesSearch = !searchTerm || itemName.includes(searchTerm) || notes.includes(searchTerm);
+        const matchesFilter = filter === 'all' || item.dataset.status === filter;
+        item.style.display = (matchesSearch && matchesFilter) ? 'flex' : 'none';
+
+        if (searchTerm && matchesSearch && matchesFilter && item.dataset.status === 'not_needed') {
+            const catBody = item.closest('.cat-body');
+            if (catBody && catBody.dataset.notneededCollapsed === 'true') {
+                catBody.dataset.notneededCollapsed = 'false';
+                catBody.querySelector('.done-separator')?.classList.remove('collapsed');
+            }
+        }
+    });
+
+    document.querySelectorAll('.cat-section').forEach(cat => {
+        if (!searchTerm) {
+            cat.style.display = '';
+            return;
+        }
+        const hasVisibleItem = [...cat.querySelectorAll('.item-row')]
+            .some(r => r.style.display !== 'none');
+        cat.style.display = hasVisibleItem ? '' : 'none';
+
+        if (hasVisibleItem) {
+            const header = cat.querySelector('.cat-header');
+            const bodyId = header?.getAttribute('aria-controls');
+            const body = bodyId ? document.getElementById(bodyId) : null;
+            if (header && body) {
+                header.setAttribute('aria-expanded', 'true');
+                body.classList.remove('collapsed');
+            }
+        }
+    });
+
+    updateExpandCollapseButtons(); // Actualizar botones al filtrar o buscar
+}
+
+let searchDebounceTimer = null;
+
+document.getElementById('searchInput').addEventListener('input', function () {
+    document.getElementById('searchClear').style.display = this.value.trim() ? 'flex' : 'none';
+
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(applyItemVisibility, 500);
+});
+
+document.getElementById('searchClear').addEventListener('click', function () {
+    clearTimeout(searchDebounceTimer); 
+    const input = document.getElementById('searchInput');
+    input.value = '';
+    this.style.display = 'none';
+    applyItemVisibility();
+    input.focus();
+});
+
+document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        applyItemVisibility();
     });
 });
 
-// Filters
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        const filter = this.dataset.filter;
-        document.querySelectorAll('.item-row').forEach(item => {
-            item.style.display = (filter === 'all' || item.dataset.status === filter)
-                ? 'flex' : 'none';
-        });
-    });
+document.addEventListener('click', (e) => {
+    const sep = e.target.closest('.done-separator');
+    if (!sep) return;
+    const catBody = sep.closest('.cat-body');
+    if (!catBody) return;
+
+    const collapsed = catBody.dataset.notneededCollapsed === 'true';
+    catBody.dataset.notneededCollapsed = collapsed ? 'false' : 'true';
+    sep.classList.toggle('collapsed', !collapsed);
 });
+
+function setAllCategoriesCollapsed(collapsed) {
+    document.querySelectorAll('.cat-header').forEach(header => {
+        const bodyId = header.getAttribute('aria-controls');
+        const body = document.getElementById(bodyId);
+        if (!body) return;
+        header.setAttribute('aria-expanded', String(!collapsed));
+        body.classList.toggle('collapsed', collapsed);
+    });
+
+    if (!collapsed) {
+        document.querySelectorAll('.cat-body').forEach(catBody => {
+            catBody.dataset.notneededCollapsed = 'false';
+            catBody.querySelector('.done-separator')?.classList.remove('collapsed');
+        });
+    }
+
+    updateExpandCollapseButtons(); // Actualizar visibilidad de botones
+}
+
+document.getElementById('collapseAllBtn')?.addEventListener('click', () => setAllCategoriesCollapsed(true));
+document.getElementById('expandAllBtn')?.addEventListener('click', () => setAllCategoriesCollapsed(false));
 
 document.addEventListener('DOMContentLoaded', function () {
+    updateExpandCollapseButtons(); // Comprobar estado inicial al cargar la página
+
     /* ── Generic accordion helper ── */
     function initAccordion(toggleId, bodyId) {
         const toggle = document.getElementById(toggleId);
