@@ -1009,15 +1009,19 @@ function applyItemVisibility() {
     });
 
     document.querySelectorAll('.cat-section').forEach(cat => {
-        if (!searchTerm) {
+        // Mostrar siempre si no hay búsqueda y el filtro es "todo"
+        if (!searchTerm && filter === 'all') {
             cat.style.display = '';
             return;
         }
+
         const hasVisibleItem = [...cat.querySelectorAll('.item-row')]
             .some(r => r.style.display !== 'none');
+            
         cat.style.display = hasVisibleItem ? '' : 'none';
 
-        if (hasVisibleItem) {
+        // Expandir automáticamente solo si el usuario está buscando texto
+        if (hasVisibleItem && searchTerm) {
             const header = cat.querySelector('.cat-header');
             const bodyId = header?.getAttribute('aria-controls');
             const body = bodyId ? document.getElementById(bodyId) : null;
