@@ -154,6 +154,45 @@
         }
         .nav-pill i { color: var(--primary); flex-shrink: 0; }
 
+        .nav-pill-wrap { position: relative; display: inline-flex; }
+
+        .nav-pill-popover {
+            position: absolute;
+            top: calc(100% );
+            /*left: 50%;*/
+            transform: translateX(-50%) translateY(-4px);
+            background: var(--text);
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: var(--r-sm);
+            box-shadow: var(--shadow-md);
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+            z-index: 300;
+        }
+        .nav-pill-popover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-bottom-color: var(--text);
+        }
+        .nav-pill-popover.show {
+            opacity: 1;
+            visibility: visible;
+          /*  transform: translateX(-50%) translateY(0);*/
+        }
+
+        @media (max-width: 480px) {
+            .nav-pill { cursor: pointer; }
+        }
+
         .nav-icon-btn {
             width: 34px;
             height: 34px;
@@ -173,7 +212,13 @@
         .nav-icon-btn:hover { background: var(--muted-bg); color: var(--text); }
         .nav-icon-btn.logout:hover { background: var(--danger-bg); color: var(--danger); }
 
-        @media (max-width: 375px) {
+        @media (max-width: 480px) {
+            .nav-pill-label { display: none; }
+            .nav-pill { max-width: 44px; padding: 4px 8px; }
+
+        }
+
+         @media (max-width: 375px) {
             .nav-pill-label { display: none; }
             .nav-pill { max-width: 44px; padding: 4px 8px; }
             .nav-brand span { display: none; }
@@ -352,9 +397,10 @@
                 <a href="{{ url_for('set_lang', lang='es') }}" class="{{ 'active' if lang == 'es' else '' }}">ES</a>
             </div>
             {% if current_user.is_authenticated %}
-                <div class="nav-pill">
+                <div class="nav-pill" id="navPillUser">
                     <i class="fas fa-user-circle"></i>
                     <span class="nav-pill-label" style="overflow:hidden;text-overflow:ellipsis;">{{ current_user.alias }}</span>
+                    <div class="nav-pill-popover" id="navPillPopover">{{ current_user.alias }}</div>
                 </div>
                 {% if current_user.is_admin %}
                     <a class="nav-icon-btn" href="{{ url_for('admin') }}" title="{{ t('admin_panel') }}">
@@ -404,7 +450,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.flash-item').forEach(el => {
         setTimeout(() => { try { new bootstrap.Alert(el).close(); } catch(e) {} }, 4000);
     });
+
+
+    const navPill = document.getElementById('navPillUser');
+    const navPopover = document.getElementById('navPillPopover');
+    if (navPill && navPopover) {
+        navPill.addEventListener('click', (e) => {
+            if (window.matchMedia('(max-width: 480px)').matches) {
+                e.stopPropagation();
+                navPopover.classList.toggle('show');
+            }
+        });
+        document.addEventListener('click', () => navPopover.classList.remove('show'));
+    }
 });
+
+
 </script>
 {% endblock %}
 </body>
