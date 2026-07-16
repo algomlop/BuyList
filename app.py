@@ -39,6 +39,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
+app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=300)
+app.config["REMEMBER_COOKIE_SECURE"] = os.environ.get("REMEMBER_COOKIE_SECURE", "1") == "1"
+
 
 _SCRIPT_NAME = os.environ.get("SCRIPT_NAME", "").rstrip("/")
 if _SCRIPT_NAME:
@@ -300,7 +303,7 @@ def index():
             user.is_admin = True
             db.session.commit()
 
-        login_user(user)
+        login_user(user, remember=True)
         return redirect(url_for("shopping_list"))
 
     return render_template("index.html")
