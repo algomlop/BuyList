@@ -206,11 +206,13 @@
     flex-shrink: 0;
 }
 .cat-prog-track {
+    display: block;
     width: 80px; height: 5px;
     background: var(--border); border-radius: 99px; overflow: hidden;
 }
 @media (max-width: 480px) { .cat-prog-track { width: 52px; } }
 .cat-prog-fill {
+    display: block;
     height: 100%;
     background: linear-gradient(90deg, var(--primary), #818CF8);
     border-radius: 99px;
@@ -363,6 +365,8 @@
     white-space: nowrap;
     background: none;
 }
+.act-btn.act-danger { color: var(--danger); }
+.act-btn.act-danger:hover { background: var(--danger-bg); }
 .act-btn.notes-toggle {
     border-color: var(--border-2);
     color: var(--text-muted);
@@ -529,12 +533,12 @@
                 aria-expanded="true"
                 aria-controls="cat-body-{{ cat.id }}">
             <span class="cat-header-name">{{ get_name(cat) }}</span>
-            <div class="cat-header-progress">
-                <div class="cat-prog-track">
-                    <div class="cat-prog-fill {% if pct == 100 %}done{% endif %}"
-                         style="width:{{ pct }}%;"></div>
-                </div>
-            </div>
+            <span class="cat-header-progress">
+                <span class="cat-prog-track">
+                    <span class="cat-prog-fill {% if pct == 100 %}done{% endif %}"
+                          style="width:{{ pct }}%;"></span>
+                </span>
+            </span>
             <i class="fas fa-chevron-down cat-chevron"></i>
         </button>
 
@@ -723,6 +727,16 @@
                                    style="color:var(--border-2);font-size:0.7rem;"></i>
                                 <span style="flex:1;">{{ get_name(item) }}</span>
                                 <span class="custom-item-cat">{{ get_name(item.category) }}</span>
+                                <form method="POST"
+                                      action="{{ url_for('delete_custom_item', item_id=item.id) }}"
+                                      onsubmit="return confirm({{ t('delete_confirm')|tojson }});"
+                                      style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="act-btn act-danger"
+                                            title="{{ t('delete') }}" aria-label="{{ t('delete') }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         {% endfor %}
                     </div>
@@ -977,9 +991,9 @@ function addQuickItem(event, categoryId) {
     .then(r => r.json())
     .then(result => {
         if (result.success) { window.location.reload(); }
-        else { alert('{{ t("error_adding_item") }}: ' + (result.error || '')); }
+        else { alert({{ t('error_adding_item')|tojson }} + ': ' + (result.error || '')); }
     })
-    .catch(() => alert('{{ t("error_adding_item") }}'));
+    .catch(() => alert({{ t('error_adding_item')|tojson }}));
     input.value = '';
 }
 
@@ -1111,6 +1125,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initAccordion('addCatToggle', 'addCatBody');
     initAccordion('customToggle', 'customBody');
+    if (location.hash === '#custom') document.getElementById('customToggle')?.click();
 
     /* ── Category preview tooltip ── */
     const PREVIEW_URL = (id) =>
