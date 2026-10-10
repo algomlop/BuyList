@@ -120,6 +120,7 @@ TRANSLATIONS = {
         "no_categories_to_add": "All categories already added",
         "collapse_all": "Collapse All",
         "expand_all": "Expand All",
+        "clear": "Clear",
     },
     "es": {
         "app_title": "Lista de la compra",
@@ -170,6 +171,7 @@ TRANSLATIONS = {
         "no_categories_to_add": "Ya están todas las categorías añadidas",
         "collapse_all": "Contraer Todo",
         "expand_all": "Expandir Todo",
+        "clear": "Limpiar",
     },
 }
 
@@ -284,7 +286,7 @@ def index():
 
         user = User.query.filter_by(alias=alias).first()
         if not user:
-            user = User(alias=alias, is_admin=(alias == ADMIN_ALIAS))
+            user = User(alias=alias, is_admin=bool(ADMIN_ALIAS and alias == ADMIN_ALIAS))
             db.session.add(user)
             db.session.commit()
             
@@ -299,7 +301,7 @@ def index():
                 for item in global_items:
                     db.session.add(ListItem(user_id=user.id, item_id=item.id, status="not_needed"))
             db.session.commit()
-        elif alias == ADMIN_ALIAS and not user.is_admin:
+        elif ADMIN_ALIAS and alias == ADMIN_ALIAS and not user.is_admin:
             user.is_admin = True
             db.session.commit()
 
@@ -380,7 +382,7 @@ def shopping_list():
                 flash(t_key("saved"), "success")
 
         elif "add_categories_to_list" in request.form:
-            selected_cat_ids = request.form.getlist("categories")
+            selected_cat_ids = [int(c) for c in request.form.getlist("categories") if c.isdigit()]
             visible_categories = Category.query.filter(
                 Category.id.in_(selected_cat_ids),
                 ((Category.user_id.is_(None)) & (Category.is_deleted == False)) | (Category.user_id == current_user.id),
@@ -406,7 +408,17 @@ def shopping_list():
                 db.session.commit()
                 flash(t_key("saved"), "success")
 
-    list_items = ListItem.query.filter_by(user_id=current_user.id).all()
+    list_items = (
+        ListItem.query
+        .join(Item, ListItem.item_id == Item.id)
+        .join(Category, Item.category_id == Category.id)
+        .filter(
+            ListItem.user_id == current_user.id,
+            Item.is_deleted == False,
+            Category.is_deleted == False,
+        )
+        .all()
+    )
 
     grouped = {}
     for li in list_items:
@@ -484,20 +496,24 @@ def update_item(li_id):
 @app.route("/api/add_list_item", methods=["POST"])
 @login_required
 def add_list_item():
-    data = request.get_json()
-    category_id = data.get('category_id')
-    item_name = data.get('item_name')
+    data = request.get_json(silent=True) or {}
+    item_name = clean_text(str(data.get("item_name", "")))
+    cat_id = str(data.get("category_id", ""))
 
-    if not all([category_id, item_name]):
+    category = None
+    if cat_id.isdigit():
+        category = Category.query.filter(
+            Category.id == int(cat_id),
+            ((Category.user_id.is_(None)) & (Category.is_deleted == False))
+            | (Category.user_id == current_user.id),
+        ).first()
+
+    if not category or not item_name:
         return jsonify({'success': False, 'error': 'Missing data'}), 400
-
-    category = Category.query.filter_by(id=category_id).first()
-    if not category:
-        return jsonify({'success': False, 'error': 'Category not found'}), 404
 
     new_item = Item(
         user_id=current_user.id,
-        category_id=category_id,
+        category_id=category.id,
         name_es=item_name,
         name_en=item_name
     )
@@ -523,6 +539,20 @@ def add_list_item():
             'status': 'to_buy'
         }
     })
+
+@app.route("/list/custom-item/<int:item_id>/delete", methods=["POST"])
+@login_required
+def delete_custom_item(item_id):
+    # Solo elementos propios (user_id == usuario actual); nunca globales ni ajenos.
+    item = Item.query.filter_by(id=item_id, user_id=current_user.id).first()
+    if not item:
+        flash(t_key("invalid_item_name"), "danger")
+    else:
+        # db.session.delete (no query.delete) para que aplique el cascade a ListItem.
+        db.session.delete(item)
+        db.session.commit()
+        flash(t_key("saved"), "success")
+    return redirect(url_for("shopping_list", _anchor="custom"))
 
 
 @app.route("/admin", methods=["GET", "POST"])
@@ -597,6 +627,8 @@ def clean_old_guests():
     db.session.commit()
 
 def seed_db():
+    if not ADMIN_ALIAS:
+        return
     admin = User.query.filter_by(alias=ADMIN_ALIAS).first()
     if not admin:
         db.session.add(User(alias=ADMIN_ALIAS, is_admin=True))
@@ -629,9 +661,10 @@ def category_preview(cat_id):
         "total": len(item_names),
     })
 
+with app.app_context():
+    db.create_all()
+    seed_db()
+    clean_old_guests()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-        seed_db()
-        clean_old_guests()
     app.run(debug=True)
