@@ -38,6 +38,8 @@ MASSIVE_SEED_DATA = {
         ("Dog kibble", "Comida perro pienso"),
         ("Mosquito repellent", "Repelente mosquitos"),
         ("Insecticide", "Insecticida"),
+		("Window cleaning scraper", "Rasqueta limpiacristales"),
+		("Mop bucket", "Cubo fregona"),
     ],
     ("Personal hygiene supplies", "Limpieza personal"): [
         ("Toilet paper", "Papel wc"),
@@ -58,6 +60,9 @@ MASSIVE_SEED_DATA = {
         ("Toilet wipes", "Toallitas wc"),
         ("Cotton sticks", "Palillos oídos"),
         ("Tissues", "Clinex"),
+		("Hydrogen peroxide", "Agua oxigenada"),
+		("Hand soap", "Jabón manos"),
+		("Plasters", "Tiritas"),
     ],
     ("Bakery", "Panadería"): [
         ("Chocolate", "Chocolate"),
@@ -79,6 +84,8 @@ MASSIVE_SEED_DATA = {
         ("Sweetener", "Edulcorante"),
         ("Cereal", "Cereales"),
         ("Breadcrumbs", "Pan rayado"),
+		("Oatmeal", "Avena"),
+		("Sliced ​​bread", "Pan de molde"),
     ],
     ("Refrigerated desserts", "Postres refrigerados"): [
         ("Yogurt", "Yogur"),
@@ -95,7 +102,7 @@ MASSIVE_SEED_DATA = {
         ("York ham", "Jamón york"),
         ("Serrano ham", "Jamón serrano"),
         ("Cream cheese", "Queso untar"),
-        ("Plastic sausages", "Salchichas plástico"),
+        ("Frankfurt sausages", "Salchichas frankfurt"),
 		("Mascarpone", "Mascarpone"),
     ],
     ("Meat and fish", "Carne y pescado"): [
@@ -145,6 +152,7 @@ MASSIVE_SEED_DATA = {
         ("Corn Tortilla Chips", "Tortitas maíz"),
         ("Popcorn", "Palomitas maíz"),
         ("Oil", "Aceite"),
+		("Sunflower oil", "Aceite de girasol"),
         ("Vinegar", "Vinagre"),
         ("Salt", "Sal"),
         ("Mayonnaise", "Mahonesa"),
@@ -171,6 +179,7 @@ MASSIVE_SEED_DATA = {
         ("Cacaolat", "Cacaolat"),
         ("Water", "Agua"),
         ("Liqueur Cream", "Crema de licor"),
+		("Tonic", "Tónica"),
     ],
     ("Frozen Foods", "Congelados"): [
         ("Pizza", "Pizza"),
@@ -190,6 +199,7 @@ MASSIVE_SEED_DATA = {
         ("Salmorejo", "Salmorejo"),
         ("Gazpacho", "Gazpacho"),
         ("Guacamole", "Guacamole"),
+		("Shortcrust pastry", "Masa quebrada"),
     ],
     ("Fruit and Vegetables", "Frutería"): [
         ("Tomatoes", "Tomates"),
@@ -204,6 +214,7 @@ MASSIVE_SEED_DATA = {
         ("Sweet Potatoes", "Boniatos"),
         ("Carrots", "Zanahoria"),
         ("Lettuce", "Lechuga"),
+		("Garlic", "Ajo"),
     ],
 }
 
